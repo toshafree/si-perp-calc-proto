@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ChartNoAxesCombined, Landmark, Percent, TrendingUp } from 'lucide-vue-next'
 import type { DealCalculator } from '../composables/useDealCalculator'
 import { formatMoney, formatPercent } from '../utils/format'
 import InfoTooltip from './InfoTooltip.vue'
@@ -18,9 +17,8 @@ function signClass(value: number): string {
 </script>
 
 <template>
-  <section class="panel results-panel" aria-labelledby="results-title" aria-live="polite">
+  <section class="calculator-section results-section" aria-labelledby="results-title" aria-live="polite">
     <div class="section-heading">
-      <span class="section-heading__icon"><ChartNoAxesCombined :size="19" /></span>
       <h2 id="results-title">Результаты</h2>
     </div>
 
@@ -50,7 +48,6 @@ function signClass(value: number): string {
       <article class="summary-item summary-item--primary">
         <span>Результат сделки</span>
         <strong :class="signClass(metrics.dealResult)">{{ formatMoney(metrics.dealResult) }}</strong>
-        <span class="summary-icon"><TrendingUp :size="22" /></span>
       </article>
 
       <article class="summary-item">
@@ -59,7 +56,6 @@ function signClass(value: number): string {
           <InfoTooltip text="Результат сделки, деленный на используемую базу капитала." />
         </span>
         <strong :class="signClass(metrics.roi)">{{ formatPercent(metrics.roi) }}</strong>
-        <span class="summary-icon"><Percent :size="22" /></span>
       </article>
 
       <article class="summary-item">
@@ -70,7 +66,6 @@ function signClass(value: number): string {
         <strong :class="signClass(metrics.annualizedReturn)">
           {{ formatPercent(metrics.annualizedReturn) }}
         </strong>
-        <span class="summary-icon"><Landmark :size="22" /></span>
       </article>
     </div>
   </section>

@@ -4,11 +4,13 @@ import NumericInput from './NumericInput.vue'
 import type { DealMetrics } from '../composables/useDealCalculator'
 
 defineProps<{
+  ownCapital: number
   loanRate: number
   metrics: DealMetrics
 }>()
 
 const emit = defineEmits<{
+  'update:ownCapital': [value: number]
   'update:loanRate': [value: number]
 }>()
 </script>
@@ -16,8 +18,20 @@ const emit = defineEmits<{
 <template>
   <div class="loan-box">
     <div class="field-group">
+      <label class="field-label" for="own-capital">Собственный капитал, ₽</label>
+      <NumericInput
+        id="own-capital"
+        :model-value="ownCapital"
+        :min="0"
+        :step="1000"
+        @update:model-value="emit('update:ownCapital', $event)"
+      />
+    </div>
+
+    <div class="field-group">
       <span class="field-label">Заемный капитал, ₽</span>
       <output class="readonly-value">{{ formatMoney(metrics.borrowedCapital) }}</output>
+      <div class="field-meta">Плечо: <strong>{{ formatLeverage(metrics.leverage) }}</strong></div>
     </div>
 
     <div class="field-group">
@@ -34,10 +48,6 @@ const emit = defineEmits<{
     <div class="field-group">
       <span class="field-label">Стоимость займа в день</span>
       <output class="readonly-value">{{ formatMoney(metrics.loanCostPerDay) }} / день</output>
-    </div>
-
-    <div class="leverage-chip" :class="{ 'leverage-chip--muted': metrics.leverage === null }">
-      Плечо: {{ formatLeverage(metrics.leverage) }}
     </div>
   </div>
 </template>
