@@ -41,7 +41,8 @@ export function interpolateSpreadExit(
   if (baseDaysToExpiration <= 0) return 0
 
   const boundedDays = Math.min(Math.max(daysInTrade, 0), baseDaysToExpiration)
-  return spreadEntry * (1 - boundedDays / baseDaysToExpiration)
+  const interpolated = spreadEntry * (1 - boundedDays / baseDaysToExpiration)
+  return Math.round((interpolated + Number.EPSILON) * 10) / 10
 }
 
 export function calculateDeal(inputs: DealInputs): DealMetrics {
@@ -63,9 +64,9 @@ export function calculateDeal(inputs: DealInputs): DealMetrics {
 
   const spreadIncome = Math.abs(inputs.spreadEntry - inputs.spreadExit) * pairs
   const fundingResult = direction === 'Short'
-    ? inputs.fundingRate * inputs.workingDays
+    ? -inputs.fundingRate * dealConfig.fundingMultiplier * pairs * inputs.workingDays
     : direction === 'Long'
-      ? -inputs.fundingRate * inputs.workingDays
+      ? inputs.fundingRate * dealConfig.fundingMultiplier * pairs * inputs.workingDays
       : 0
   const commission = pairs * dealConfig.commissionPerContract * 4
   const dealResult = spreadIncome + fundingResult - loanCost - commission
@@ -149,7 +150,7 @@ export function useDealCalculator(today = new Date()) {
   }
 
   function setSpreadExit(value: number): void {
-    spreadExit.value = value
+    spreadExit.value = Math.round((value + Number.EPSILON) * 10) / 10
     spreadExitIsManual.value = true
   }
 

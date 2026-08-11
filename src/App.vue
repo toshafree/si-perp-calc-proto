@@ -21,7 +21,7 @@ const calculator = useDealCalculator()
     <footer class="formula-note">
       <Info :size="17" aria-hidden="true" />
       <p>
-        <span><strong>Short</strong> получает фандинг при положительной ставке, <strong>Long</strong> — платит.</span>
+        <span><strong>Short</strong> спреда: вечный фьючерс в Long, фандинг вычитается. <strong>Long</strong> спреда — прибавляется.</span>
         <span>ROI считается от капитала под ГО, годовых — по календарным дням.</span>
       </p>
     </footer>

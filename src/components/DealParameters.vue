@@ -163,6 +163,8 @@ const {
         <NumericInput
           id="spread-exit"
           :model-value="spreadExit"
+          :step="0.1"
+          :precision="1"
           @update:model-value="setSpreadExit"
         />
         <p class="field-hint">Автопересчет по линейной сходимости к 0 к экспирации</p>

@@ -8,6 +8,7 @@ const props = withDefaults(defineProps<{
   max?: number
   step?: number
   integer?: boolean
+  precision?: number
   inputmode?: 'numeric' | 'decimal'
 }>(), {
   step: 1,
@@ -22,14 +23,25 @@ const emit = defineEmits<{
 const textValue = ref(String(props.modelValue))
 const isFocused = ref(false)
 
+function formatTextValue(value: number): string {
+  return props.precision === undefined ? String(value) : value.toFixed(props.precision)
+}
+
+textValue.value = formatTextValue(props.modelValue)
+
 watch(() => props.modelValue, (value) => {
   if (!isFocused.value || Number(textValue.value.replace(',', '.')) !== value) {
-    textValue.value = String(value)
+    textValue.value = formatTextValue(value)
   }
 })
 
 function normalize(value: number): number {
   let result = props.integer ? Math.trunc(value) : value
+
+  if (props.precision !== undefined) {
+    const multiplier = 10 ** props.precision
+    result = Math.round((result + Number.EPSILON) * multiplier) / multiplier
+  }
 
   if (props.min !== undefined) result = Math.max(props.min, result)
   if (props.max !== undefined) result = Math.min(props.max, result)
@@ -52,12 +64,12 @@ function handleBlur(): void {
   const parsed = Number(textValue.value.replace(',', '.'))
 
   if (textValue.value.trim() === '' || !Number.isFinite(parsed)) {
-    textValue.value = String(props.modelValue)
+    textValue.value = formatTextValue(props.modelValue)
     return
   }
 
   const normalized = normalize(parsed)
-  textValue.value = String(normalized)
+  textValue.value = formatTextValue(normalized)
   emit('update:modelValue', normalized)
 }
 </script>

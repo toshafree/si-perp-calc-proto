@@ -5,6 +5,7 @@ export const dealConfig = {
   defaultOwnCapital: 500_000,
   defaultLoanRate: 21,
   defaultFundingRate: 0.012,
+  fundingMultiplier: 1_000,
   defaultPairs: 1,
   defaultEntrySpread: 645,
   fundingPresets: [

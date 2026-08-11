@@ -24,19 +24,25 @@ describe('calculateDeal', () => {
 
     expect(result.direction).toBe('Short')
     expect(result.spreadIncome).toBe(645)
-    expect(result.fundingResult).toBeCloseTo(0.324)
+    expect(result.fundingResult).toBeCloseTo(-324)
     expect(result.commission).toBeCloseTo(1.8)
     expect(result.loanCost).toBe(0)
-    expect(result.dealResult).toBeCloseTo(643.524)
-    expect(result.roi).toBeCloseTo(643.524 / 24_700)
-    expect(result.annualizedReturn).toBeCloseTo((643.524 / 24_700) / 37 * 365)
+    expect(result.dealResult).toBeCloseTo(319.2)
+    expect(result.roi).toBeCloseTo(319.2 / 24_700)
+    expect(result.annualizedReturn).toBeCloseTo((319.2 / 24_700) / 37 * 365)
   })
 
-  it('делает фандинг расходом для Long', () => {
+  it('делает фандинг доходом для Long', () => {
     const result = calculateDeal({ ...baseInputs, spreadEntry: 0, spreadExit: 645 })
 
     expect(result.direction).toBe('Long')
-    expect(result.fundingResult).toBeCloseTo(-0.324)
+    expect(result.fundingResult).toBeCloseTo(324)
+  })
+
+  it('умножает фандинг на количество пар', () => {
+    const result = calculateDeal({ ...baseInputs, pairs: 3 })
+
+    expect(result.fundingResult).toBeCloseTo(-972)
   })
 
   it('умножает комиссию на четыре контракта сделки и число пар', () => {
@@ -107,7 +113,7 @@ describe('useDealCalculator', () => {
 
     calculator.setDaysInTrade(20)
 
-    expect(calculator.spreadExit.value).toBeCloseTo(700 * (1 - 20 / 37))
+    expect(calculator.spreadExit.value).toBe(321.6)
     expect(calculator.spreadExitIsManual.value).toBe(false)
   })
 
@@ -120,5 +126,13 @@ describe('useDealCalculator', () => {
 
     expect(calculator.daysInTrade.value).toBe(37)
     expect(calculator.spreadExit.value).toBe(0)
+  })
+
+  it('округляет ручной спред выхода до одного знака', () => {
+    const calculator = useDealCalculator(new Date('2026-08-11T12:00:00+04:00'))
+
+    calculator.setSpreadExit(123.46)
+
+    expect(calculator.spreadExit.value).toBe(123.5)
   })
 })
