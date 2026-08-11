@@ -45,6 +45,8 @@ Workflow [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) при �
 
 Основные формулы и чистая функция `calculateDeal` находятся в [`src/composables/useDealCalculator.ts`](src/composables/useDealCalculator.ts).
 
+Подробный контракт получения данных спреда и инструкция по расчетам для frontend находятся в [`docs/frontend-calculations.md`](docs/frontend-calculations.md).
+
 ## Расчеты
 
 - Сведение спреда: `|спред входа − спред выхода| × пары`.
