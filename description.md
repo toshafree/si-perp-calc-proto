@@ -73,7 +73,8 @@ src/config/dealConfig.ts
 Для прототипа:
 
 expirationDate = "2026-09-17"
-marginPerPair = 24700
+futMargin = 13054
+perpMargin = 11646
 commissionPerContract = 0.45
 defaultOwnCapital = 500000
 defaultLoanRate = 21
@@ -153,15 +154,26 @@ Default:
 
 1
 
-Рядом readonly calculated value:
+Рядом editable value:
 
-"Общее ГО: 24 700 ₽"
+"ГО по позиции, ₽"
+
+По умолчанию ГО одной пары равно большему ГО из двух инструментов. Для данных прототипа это 13 054 ₽.
 
 Формула:
 
-totalMargin = pairs * marginPerPair
+marginPerPair = max(futMargin, perpMargin)
+positionMargin = pairs * marginPerPair
+totalMargin = positionMargin
 
-marginPerPair = 24700 ₽
+futMargin = 13054 ₽
+perpMargin = 11646 ₽
+
+Пользователь может вручную изменить `positionMargin`. После ручного изменения значение не пересчитывается при изменении количества пар. Рядом есть действие:
+
+"По правилам MOEX"
+
+Оно возвращает автоматический расчет `pairs * max(futMargin, perpMargin)`. Пока поле не изменено вручную, изменение количества пар автоматически пересчитывает ГО по позиции.
 
 # 6. Собственный капитал
 
@@ -453,7 +465,7 @@ annualizedReturn =
 
 Например:
 
-24 700 ₽
+13 054 ₽
 500 000 ₽
 643,52 ₽
 
@@ -480,7 +492,7 @@ daysInTrade = 37
 workingDays = 27
 fundingRate = 0.012
 pairs = 1
-totalMargin = 24700
+positionMargin = 13054
 ownCapital = 500000
 borrowedCapital = disabled / 0
 spreadEntry = 645
@@ -496,13 +508,13 @@ dealResult = 319.2 ₽
 
 ROI:
 
-319.2 / 24700 ≈ 0.01292
-=> около 1.29%
+319.2 / 13054 ≈ 0.02445
+=> около 2.45%
 
 Годовых:
 
-1.292% / 37 * 365
-=> около 12.75%
+2.445% / 37 * 365
+=> около 24.12%
 
 Используй этот сценарий как sanity check.
 

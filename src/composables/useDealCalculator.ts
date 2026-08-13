@@ -9,6 +9,7 @@ export interface DealInputs {
   workingDays: number
   fundingRate: number
   pairs: number
+  positionMargin: number
   ownCapital: number
   useLoan: boolean
   loanRate: number
@@ -45,10 +46,19 @@ export function interpolateSpreadExit(
   return Math.round((interpolated + Number.EPSILON) * 10) / 10
 }
 
+export function calculateMoexPositionMargin(
+  pairs: number,
+  futMargin: number,
+  perpMargin: number,
+): number {
+  const normalizedPairs = Math.max(0, Math.trunc(pairs))
+  return normalizedPairs * Math.max(futMargin, perpMargin, 0)
+}
+
 export function calculateDeal(inputs: DealInputs): DealMetrics {
   const pairs = Math.max(0, Math.trunc(inputs.pairs))
   const daysInTrade = Math.max(0, inputs.daysInTrade)
-  const totalMargin = pairs * dealConfig.marginPerPair
+  const totalMargin = Math.max(inputs.positionMargin, 0)
   const ownCapital = Math.max(0, inputs.ownCapital)
   const borrowedCapital = inputs.useLoan ? Math.max(totalMargin - ownCapital, 0) : 0
   const totalCapital = ownCapital + borrowedCapital
@@ -97,6 +107,12 @@ export function useDealCalculator(today = new Date()) {
   const daysInTrade = ref<number>(baseDaysToExpiration)
   const fundingRate = ref<number>(dealConfig.defaultFundingRate)
   const pairs = ref<number>(dealConfig.defaultPairs)
+  const positionMargin = ref<number>(calculateMoexPositionMargin(
+    pairs.value,
+    dealConfig.futMargin,
+    dealConfig.perpMargin,
+  ))
+  const positionMarginIsManual = ref(false)
   const ownCapital = ref<number>(dealConfig.defaultOwnCapital)
   const useLoan = ref(false)
   const loanRate = ref<number>(dealConfig.defaultLoanRate)
@@ -112,6 +128,7 @@ export function useDealCalculator(today = new Date()) {
     workingDays: workingDays.value,
     fundingRate: fundingRate.value,
     pairs: pairs.value,
+    positionMargin: positionMargin.value,
     ownCapital: ownCapital.value,
     useLoan: useLoan.value,
     loanRate: loanRate.value,
@@ -141,6 +158,28 @@ export function useDealCalculator(today = new Date()) {
     recalculateSpreadExit()
   }
 
+  function setPairs(value: number): void {
+    pairs.value = Math.max(1, Math.trunc(value))
+
+    if (!positionMarginIsManual.value) {
+      resetPositionMargin()
+    }
+  }
+
+  function setPositionMargin(value: number): void {
+    positionMargin.value = Math.max(value, 0)
+    positionMarginIsManual.value = true
+  }
+
+  function resetPositionMargin(): void {
+    positionMargin.value = calculateMoexPositionMargin(
+      pairs.value,
+      dealConfig.futMargin,
+      dealConfig.perpMargin,
+    )
+    positionMarginIsManual.value = false
+  }
+
   function setSpreadEntry(value: number): void {
     spreadEntry.value = value
 
@@ -160,6 +199,8 @@ export function useDealCalculator(today = new Date()) {
     workingDays,
     fundingRate,
     pairs,
+    positionMargin,
+    positionMarginIsManual,
     ownCapital,
     useLoan,
     loanRate,
@@ -169,6 +210,9 @@ export function useDealCalculator(today = new Date()) {
     metrics,
     setDaysInTrade,
     resetDaysToExpiration,
+    setPairs,
+    setPositionMargin,
+    resetPositionMargin,
     setSpreadEntry,
     setSpreadExit,
   }

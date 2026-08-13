@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   calculateDeal,
+  calculateMoexPositionMargin,
   interpolateSpreadExit,
   useDealCalculator,
   type DealInputs,
@@ -11,6 +12,7 @@ const baseInputs: DealInputs = {
   workingDays: 27,
   fundingRate: 0.012,
   pairs: 1,
+  positionMargin: 13_054,
   ownCapital: 500_000,
   useLoan: false,
   loanRate: 21,
@@ -28,8 +30,8 @@ describe('calculateDeal', () => {
     expect(result.commission).toBeCloseTo(1.8)
     expect(result.loanCost).toBe(0)
     expect(result.dealResult).toBeCloseTo(319.2)
-    expect(result.roi).toBeCloseTo(319.2 / 24_700)
-    expect(result.annualizedReturn).toBeCloseTo((319.2 / 24_700) / 37 * 365)
+    expect(result.roi).toBeCloseTo(319.2 / 13_054)
+    expect(result.annualizedReturn).toBeCloseTo((319.2 / 13_054) / 37 * 365)
   })
 
   it('делает фандинг доходом для Long', () => {
@@ -59,9 +61,9 @@ describe('calculateDeal', () => {
       loanRate: 21,
     })
 
-    expect(result.borrowedCapital).toBe(14_700)
-    expect(result.loanCostPerDay).toBeCloseTo(14_700 * 0.21 / 365)
-    expect(result.loanCost).toBeCloseTo(14_700 * 0.21 / 365 * 37)
+    expect(result.borrowedCapital).toBe(3_054)
+    expect(result.loanCostPerDay).toBeCloseTo(3_054 * 0.21 / 365)
+    expect(result.loanCost).toBeCloseTo(3_054 * 0.21 / 365 * 37)
     expect(result.roiBase).toBe(10_000)
     expect(result.roi).toBeCloseTo(result.dealResult / 10_000)
   })
@@ -70,7 +72,7 @@ describe('calculateDeal', () => {
     const result = calculateDeal({ ...baseInputs, useLoan: true })
 
     expect(result.borrowedCapital).toBe(0)
-    expect(result.roiBase).toBe(24_700)
+    expect(result.roiBase).toBe(13_054)
   })
 
   it('не возвращает Infinity при нулевом капитале или сроке', () => {
@@ -85,6 +87,13 @@ describe('calculateDeal', () => {
     expect(result.leverage).toBeNull()
     expect(result.roi).toBe(0)
     expect(result.annualizedReturn).toBe(0)
+  })
+})
+
+describe('calculateMoexPositionMargin', () => {
+  it('берет большее ГО инструмента и умножает на количество пар', () => {
+    expect(calculateMoexPositionMargin(1, 13_054, 11_646)).toBe(13_054)
+    expect(calculateMoexPositionMargin(3, 13_054, 11_646)).toBe(39_162)
   })
 })
 
@@ -134,5 +143,22 @@ describe('useDealCalculator', () => {
     calculator.setSpreadExit(123.46)
 
     expect(calculator.spreadExit.value).toBe(123.5)
+  })
+
+  it('пересчитывает ГО по правилам MOEX и сохраняет ручное значение', () => {
+    const calculator = useDealCalculator(new Date('2026-08-11T12:00:00+04:00'))
+
+    expect(calculator.positionMargin.value).toBe(13_054)
+    calculator.setPairs(2)
+    expect(calculator.positionMargin.value).toBe(26_108)
+
+    calculator.setPositionMargin(30_000)
+    calculator.setPairs(3)
+    expect(calculator.positionMargin.value).toBe(30_000)
+    expect(calculator.positionMarginIsManual.value).toBe(true)
+
+    calculator.resetPositionMargin()
+    expect(calculator.positionMargin.value).toBe(39_162)
+    expect(calculator.positionMarginIsManual.value).toBe(false)
   })
 })

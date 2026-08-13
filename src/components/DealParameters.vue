@@ -16,6 +16,8 @@ const {
   workingDays,
   fundingRate,
   pairs,
+  positionMargin,
+  positionMarginIsManual,
   ownCapital,
   useLoan,
   loanRate,
@@ -25,6 +27,9 @@ const {
   metrics,
   setDaysInTrade,
   resetDaysToExpiration,
+  setPairs,
+  setPositionMargin,
+  resetPositionMargin,
   setSpreadEntry,
   setSpreadExit,
 } = props.calculator
@@ -80,17 +85,35 @@ const {
         <label class="field-label" for="pairs">Пар контрактов</label>
         <NumericInput
           id="pairs"
-          v-model="pairs"
+          :model-value="pairs"
           :min="1"
           :integer="true"
           inputmode="numeric"
+          @update:model-value="setPairs"
         />
         <div class="field-meta">
-          <span class="output-label">
-            Общее ГО
-            <InfoTooltip text="Гарантийное обеспечение: количество пар × 24 700 ₽." />
-          </span>
-          <strong>{{ formatMoney(metrics.totalMargin) }}</strong>
+          <span>Целое число от 1</span>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label" for="position-margin">
+          ГО по позиции, ₽
+          <InfoTooltip text="По правилам MOEX: количество пар × большее ГО из срочного и вечного фьючерсов." />
+        </label>
+        <NumericInput
+          id="position-margin"
+          :model-value="positionMargin"
+          :min="0"
+          :step="100"
+          @update:model-value="setPositionMargin"
+        />
+        <div class="field-meta">
+          <span v-if="positionMarginIsManual" class="manual-label">Изменено вручную</span>
+          <span v-else>{{ formatMoney(Math.max(dealConfig.futMargin, dealConfig.perpMargin)) }} за пару</span>
+          <button class="text-link" type="button" @click="resetPositionMargin">
+            По правилам MOEX
+          </button>
         </div>
       </div>
     </div>

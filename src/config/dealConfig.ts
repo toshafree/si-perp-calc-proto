@@ -1,6 +1,7 @@
 export const dealConfig = {
   expirationDate: '2026-09-17',
-  marginPerPair: 24_700,
+  futMargin: 13_054,
+  perpMargin: 11_646,
   commissionPerContract: 0.45,
   defaultOwnCapital: 500_000,
   defaultLoanRate: 21,
