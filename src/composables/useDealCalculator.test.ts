@@ -6,6 +6,7 @@ import {
   useDealCalculator,
   type DealInputs,
 } from './useDealCalculator'
+import type { SettingsStorage } from '../utils/dealSettings'
 
 const baseInputs: DealInputs = {
   daysInTrade: 37,
@@ -171,5 +172,32 @@ describe('useDealCalculator', () => {
     calculator.resetPositionMargin()
     expect(calculator.positionMargin.value).toBe(39_162)
     expect(calculator.positionMarginIsManual.value).toBe(false)
+  })
+
+  it('сохраняет и восстанавливает пользовательские настройки', () => {
+    let storedValue: string | null = null
+    const storage: SettingsStorage = {
+      getItem: () => storedValue,
+      setItem: (_key, value) => {
+        storedValue = value
+      },
+    }
+    const today = new Date('2026-08-11T12:00:00+04:00')
+    const calculator = useDealCalculator(today, storage)
+
+    calculator.setPairs(4)
+    calculator.ownCapital.value = 250_000
+    calculator.loanRate.value = 17.5
+    calculator.setRegressionSettings('30м', 2_000)
+
+    expect(calculator.saveSettings()).toBe(true)
+
+    const restored = useDealCalculator(today, storage)
+    expect(restored.pairs.value).toBe(4)
+    expect(restored.ownCapital.value).toBe(250_000)
+    expect(restored.loanRate.value).toBe(17.5)
+    expect(restored.regressionTimeframe.value).toBe('30м')
+    expect(restored.regressionCandles.value).toBe(2_000)
+    expect(restored.positionMargin.value).toBe(52_216)
   })
 })

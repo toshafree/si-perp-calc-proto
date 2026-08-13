@@ -1,5 +1,12 @@
 import { computed, ref } from 'vue'
 import { dealConfig } from '../config/dealConfig'
+import {
+  getBrowserSettingsStorage,
+  loadDealSettings,
+  saveDealSettings,
+  type RegressionTimeframe,
+  type SettingsStorage,
+} from '../utils/dealSettings'
 import { calendarDaysUntil, countWorkingDays } from '../utils/workingDays'
 
 export type DealDirection = 'Short' | 'Long' | 'Neutral'
@@ -102,20 +109,28 @@ export function calculateDeal(inputs: DealInputs): DealMetrics {
   }
 }
 
-export function useDealCalculator(today = new Date()) {
+export function useDealCalculator(
+  today = new Date(),
+  settingsStorage: SettingsStorage | null = getBrowserSettingsStorage(),
+) {
+  const savedSettings = loadDealSettings(settingsStorage)
   const baseDaysToExpiration = calendarDaysUntil(dealConfig.expirationDate, today)
   const daysInTrade = ref<number>(baseDaysToExpiration)
   const fundingRate = ref<number>(dealConfig.defaultFundingRate)
-  const pairs = ref<number>(dealConfig.defaultPairs)
+  const pairs = ref<number>(savedSettings?.pairs ?? dealConfig.defaultPairs)
   const positionMargin = ref<number>(calculateMoexPositionMargin(
     pairs.value,
     dealConfig.futMargin,
     dealConfig.perpMargin,
   ))
   const positionMarginIsManual = ref(false)
-  const ownCapital = ref<number>(dealConfig.defaultOwnCapital)
+  const ownCapital = ref<number>(savedSettings?.ownCapital ?? dealConfig.defaultOwnCapital)
   const useLoan = ref(false)
-  const loanRate = ref<number>(dealConfig.defaultLoanRate)
+  const loanRate = ref<number>(savedSettings?.loanRate ?? dealConfig.defaultLoanRate)
+  const regressionTimeframe = ref<RegressionTimeframe>(
+    savedSettings?.regression.timeframe ?? '5м',
+  )
+  const regressionCandles = ref<number>(savedSettings?.regression.candles ?? 3_000)
   const spreadEntry = ref<number>(dealConfig.defaultEntrySpread)
   const spreadExit = ref<number>(
     interpolateSpreadExit(spreadEntry.value, daysInTrade.value, baseDaysToExpiration),
@@ -193,6 +208,23 @@ export function useDealCalculator(today = new Date()) {
     spreadExitIsManual.value = true
   }
 
+  function setRegressionSettings(timeframe: RegressionTimeframe, candles: number): void {
+    regressionTimeframe.value = timeframe
+    regressionCandles.value = Math.max(1, Math.trunc(candles))
+  }
+
+  function saveSettings(): boolean {
+    return saveDealSettings(settingsStorage, {
+      pairs: pairs.value,
+      ownCapital: ownCapital.value,
+      loanRate: loanRate.value,
+      regression: {
+        timeframe: regressionTimeframe.value,
+        candles: regressionCandles.value,
+      },
+    })
+  }
+
   return {
     baseDaysToExpiration,
     daysInTrade,
@@ -204,6 +236,8 @@ export function useDealCalculator(today = new Date()) {
     ownCapital,
     useLoan,
     loanRate,
+    regressionTimeframe,
+    regressionCandles,
     spreadEntry,
     spreadExit,
     spreadExitIsManual,
@@ -216,6 +250,8 @@ export function useDealCalculator(today = new Date()) {
     setSpreadEntry,
     setSpreadExit,
     recalculateSpreadExit,
+    setRegressionSettings,
+    saveSettings,
   }
 }
 

@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { dealConfig } from '../config/dealConfig'
 import type { DealCalculator } from '../composables/useDealCalculator'
 import { formatMoney, formatRate } from '../utils/format'
 import LoanParameters from './LoanParameters.vue'
 import NumericInput from './NumericInput.vue'
 import RegressionModal from './RegressionModal.vue'
+import type { RegressionTimeframe } from '../utils/dealSettings'
 
 const props = defineProps<{
   calculator: DealCalculator
@@ -22,6 +23,8 @@ const {
   ownCapital,
   useLoan,
   loanRate,
+  regressionTimeframe,
+  regressionCandles,
   spreadEntry,
   spreadExit,
   spreadExitIsManual,
@@ -34,20 +37,40 @@ const {
   setSpreadEntry,
   setSpreadExit,
   recalculateSpreadExit,
+  setRegressionSettings,
+  saveSettings,
 } = props.calculator
 
 const regressionModalOpen = ref(false)
+const saveStatus = ref<'idle' | 'saved' | 'error'>('idle')
 
-function applyRegression(_settings: { timeframe: string; candles: number }): void {
+function applyRegression(settings: { timeframe: RegressionTimeframe; candles: number }): void {
+  setRegressionSettings(settings.timeframe, settings.candles)
   recalculateSpreadExit()
   regressionModalOpen.value = false
 }
+
+function handleSaveSettings(): void {
+  saveStatus.value = saveSettings() ? 'saved' : 'error'
+}
+
+watch([pairs, ownCapital, loanRate, regressionTimeframe, regressionCandles], () => {
+  saveStatus.value = 'idle'
+})
 </script>
 
 <template>
   <section class="calculator-section" aria-labelledby="parameters-title">
     <div class="section-heading">
       <h2 id="parameters-title">Параметры сделки</h2>
+      <div class="settings-actions">
+        <span class="save-status" aria-live="polite">
+          {{ saveStatus === 'saved' ? 'Сохранено' : saveStatus === 'error' ? 'Не удалось сохранить' : '' }}
+        </span>
+        <button class="settings-button" type="button" @click="handleSaveSettings">
+          Сохранить настройки
+        </button>
+      </div>
     </div>
 
     <div class="parameters-grid parameters-grid--top">
@@ -187,6 +210,8 @@ function applyRegression(_settings: { timeframe: string; candles: number }): voi
 
     <RegressionModal
       v-if="regressionModalOpen"
+      :timeframe="regressionTimeframe"
+      :candles="regressionCandles"
       @close="regressionModalOpen = false"
       @apply="applyRegression"
     />

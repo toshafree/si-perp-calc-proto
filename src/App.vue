@@ -9,8 +9,7 @@ const calculator = useDealCalculator()
 <template>
   <main class="app-shell">
     <header class="app-header">
-      <h1>Калькулятор сделки для спреда срочный / вечный фьючерс MOEX</h1>
-      <p>Оценка доходности сделки с учетом фандинга, займа и комиссий</p>
+      <h1>Калькулятор срочный/вечный фьючерс MOEX</h1>
     </header>
 
     <form class="calculator-surface" @submit.prevent>

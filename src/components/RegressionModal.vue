@@ -1,21 +1,29 @@
 <script setup lang="ts">
 import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import {
+  regressionTimeframes,
+  type RegressionTimeframe,
+} from '../utils/dealSettings'
 import NumericInput from './NumericInput.vue'
 
 interface RegressionSettings {
-  timeframe: '1м' | '5м' | '15м' | '30м' | '1ч' | '1д'
+  timeframe: RegressionTimeframe
   candles: number
 }
+
+const props = defineProps<{
+  timeframe: RegressionTimeframe
+  candles: number
+}>()
 
 const emit = defineEmits<{
   close: []
   apply: [settings: RegressionSettings]
 }>()
 
-const timeframe = ref<RegressionSettings['timeframe']>('5м')
-const candles = ref(3_000)
+const timeframe = ref<RegressionTimeframe>(props.timeframe)
+const candles = ref(props.candles)
 const applyButton = ref<HTMLButtonElement | null>(null)
-const timeframes: RegressionSettings['timeframe'][] = ['1м', '5м', '15м', '30м', '1ч', '1д']
 
 function handleKeydown(event: KeyboardEvent): void {
   if (event.key === 'Escape') emit('close')
@@ -62,7 +70,7 @@ onBeforeUnmount(() => {
             <label class="field-label" for="regression-timeframe">Таймфрейм</label>
             <div class="select-wrap">
               <select id="regression-timeframe" v-model="timeframe" class="form-select">
-                <option v-for="option in timeframes" :key="option" :value="option">
+                <option v-for="option in regressionTimeframes" :key="option" :value="option">
                   {{ option }}
                 </option>
               </select>

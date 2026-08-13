@@ -76,12 +76,6 @@ a {
   letter-spacing: -0.018em;
 }
 
-.app-header p {
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.84rem;
-}
-
 .calculator-surface {
   overflow: visible;
   border: 0;
@@ -98,6 +92,11 @@ a {
 }
 
 .section-heading {
+  display: flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
   margin-bottom: 19px;
 }
 
@@ -107,6 +106,37 @@ a {
   font-size: 1.05rem;
   font-weight: 700;
   line-height: 1.25;
+}
+
+.settings-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.save-status {
+  color: #8f929c;
+  font-size: 0.7rem;
+}
+
+.settings-button {
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid #4a4c56;
+  border-radius: 6px;
+  outline: 0;
+  background: #2a2b32;
+  color: #d1d2d8;
+  cursor: pointer;
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+
+.settings-button:hover,
+.settings-button:focus-visible {
+  border-color: #646671;
+  background: #303139;
+  color: #f0f0f3;
 }
 
 .parameters-grid {
@@ -648,6 +678,16 @@ a {
 
   .calculator-section {
     padding: 17px 15px;
+  }
+
+  .section-heading {
+    align-items: flex-start;
+  }
+
+  .settings-actions {
+    flex-direction: column-reverse;
+    align-items: flex-end;
+    gap: 3px;
   }
 
   .parameters-grid--top,
