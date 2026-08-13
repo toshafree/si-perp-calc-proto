@@ -16,13 +16,6 @@ const calculator = useDealCalculator()
     <form class="calculator-surface" @submit.prevent>
       <DealParameters :calculator="calculator" />
       <DealResults :calculator="calculator" />
-
-      <footer class="formula-note">
-        <p>
-          <span><strong>Short</strong> спреда: вечный фьючерс в Long, фандинг вычитается. <strong>Long</strong> спреда — прибавляется.</span>
-          <span>ROI считается от капитала под ГО, годовых — по календарным дням.</span>
-        </p>
-      </footer>
     </form>
   </main>
 </template>

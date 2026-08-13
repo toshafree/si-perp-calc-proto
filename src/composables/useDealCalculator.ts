@@ -215,6 +215,7 @@ export function useDealCalculator(today = new Date()) {
     resetPositionMargin,
     setSpreadEntry,
     setSpreadExit,
+    recalculateSpreadExit,
   }
 }
 

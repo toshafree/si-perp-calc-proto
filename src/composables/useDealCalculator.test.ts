@@ -145,6 +145,17 @@ describe('useDealCalculator', () => {
     expect(calculator.spreadExit.value).toBe(123.5)
   })
 
+  it('применяет текущий расчет спреда выхода из модального окна', () => {
+    const calculator = useDealCalculator(new Date('2026-08-11T12:00:00+04:00'))
+
+    calculator.setDaysInTrade(20)
+    calculator.setSpreadExit(100)
+    calculator.recalculateSpreadExit()
+
+    expect(calculator.spreadExit.value).toBe(296.4)
+    expect(calculator.spreadExitIsManual.value).toBe(false)
+  })
+
   it('пересчитывает ГО по правилам MOEX и сохраняет ручное значение', () => {
     const calculator = useDealCalculator(new Date('2026-08-11T12:00:00+04:00'))
 

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { DealCalculator } from '../composables/useDealCalculator'
 import { formatMoney, formatPercent } from '../utils/format'
-import InfoTooltip from './InfoTooltip.vue'
 
 const props = defineProps<{
   calculator: DealCalculator
@@ -22,51 +21,45 @@ function signClass(value: number): string {
       <h2 id="results-title">Результаты</h2>
     </div>
 
-    <div class="metric-grid">
-      <article class="metric-card">
+    <div class="results-grid results-grid--details">
+      <div class="result-item">
         <span>Доход от сведения спреда</span>
         <strong :class="signClass(metrics.spreadIncome)">{{ formatMoney(metrics.spreadIncome) }}</strong>
-      </article>
+      </div>
 
-      <article class="metric-card">
+      <div class="result-item">
         <span>Фандинг</span>
         <strong :class="signClass(metrics.fundingResult)">{{ formatMoney(metrics.fundingResult) }}</strong>
-      </article>
+      </div>
 
-      <article v-if="useLoan" class="metric-card">
+      <div v-if="useLoan" class="result-item">
         <span>Займ</span>
         <strong :class="signClass(-metrics.loanCost)">{{ formatMoney(-metrics.loanCost) }}</strong>
-      </article>
+      </div>
 
-      <article class="metric-card">
+      <div class="result-item">
         <span>Комиссии</span>
         <strong :class="signClass(-metrics.commission)">{{ formatMoney(-metrics.commission) }}</strong>
-      </article>
+      </div>
     </div>
 
-    <div class="summary-panel">
-      <article class="summary-item summary-item--primary">
+    <div class="results-grid results-grid--summary">
+      <div class="result-item result-item--primary">
         <span>Результат сделки</span>
         <strong :class="signClass(metrics.dealResult)">{{ formatMoney(metrics.dealResult) }}</strong>
-      </article>
+      </div>
 
-      <article class="summary-item">
-        <span class="summary-label">
-          ROI сделки
-          <InfoTooltip text="Результат сделки, деленный на используемую базу капитала." />
-        </span>
+      <div class="result-item result-item--summary">
+        <span>ROI сделки</span>
         <strong :class="signClass(metrics.roi)">{{ formatPercent(metrics.roi) }}</strong>
-      </article>
+      </div>
 
-      <article class="summary-item">
-        <span class="summary-label">
-          Годовых
-          <InfoTooltip text="ROI, приведенный к году по календарным дням сделки." />
-        </span>
+      <div class="result-item result-item--summary">
+        <span>Годовых</span>
         <strong :class="signClass(metrics.annualizedReturn)">
           {{ formatPercent(metrics.annualizedReturn) }}
         </strong>
-      </article>
+      </div>
     </div>
   </section>
 </template>

@@ -1,10 +1,11 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { dealConfig } from '../config/dealConfig'
 import type { DealCalculator } from '../composables/useDealCalculator'
 import { formatMoney, formatRate } from '../utils/format'
-import InfoTooltip from './InfoTooltip.vue'
 import LoanParameters from './LoanParameters.vue'
 import NumericInput from './NumericInput.vue'
+import RegressionModal from './RegressionModal.vue'
 
 const props = defineProps<{
   calculator: DealCalculator
@@ -32,7 +33,15 @@ const {
   resetPositionMargin,
   setSpreadEntry,
   setSpreadExit,
+  recalculateSpreadExit,
 } = props.calculator
+
+const regressionModalOpen = ref(false)
+
+function applyRegression(_settings: { timeframe: string; candles: number }): void {
+  recalculateSpreadExit()
+  regressionModalOpen.value = false
+}
 </script>
 
 <template>
@@ -99,7 +108,6 @@ const {
       <div class="field-group">
         <label class="field-label" for="position-margin">
           ГО по позиции, ₽
-          <InfoTooltip text="По правилам MOEX: количество пар × большее ГО из срочного и вечного фьючерсов." />
         </label>
         <NumericInput
           id="position-margin"
@@ -109,7 +117,7 @@ const {
           @update:model-value="setPositionMargin"
         />
         <div class="field-meta">
-          <span v-if="positionMarginIsManual" class="manual-label">Изменено вручную</span>
+          <span v-if="positionMarginIsManual" class="manual-label">Вручную</span>
           <span v-else>{{ formatMoney(Math.max(dealConfig.futMargin, dealConfig.perpMargin)) }} за пару</span>
           <button class="text-link" type="button" @click="resetPositionMargin">
             По правилам MOEX
@@ -138,8 +146,10 @@ const {
           @update:model-value="setSpreadExit"
         />
         <div class="field-meta">
-          <span>Линейная сходимость к экспирации</span>
-          <span v-if="spreadExitIsManual" class="manual-label">Изменено вручную</span>
+          <button class="text-link" type="button" @click="regressionModalOpen = true">
+            Расчёт по лин. регрессии
+          </button>
+          <span v-if="spreadExitIsManual" class="manual-label">Вручную</span>
         </div>
       </div>
 
@@ -174,5 +184,11 @@ const {
         @update:loan-rate="loanRate = $event"
       />
     </Transition>
+
+    <RegressionModal
+      v-if="regressionModalOpen"
+      @close="regressionModalOpen = false"
+      @apply="applyRegression"
+    />
   </section>
 </template>
